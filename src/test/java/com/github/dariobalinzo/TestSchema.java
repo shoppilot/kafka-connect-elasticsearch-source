@@ -20,6 +20,7 @@ package com.github.dariobalinzo;
 import com.github.dariobalinzo.schema.SchemaConverter;
 import com.github.dariobalinzo.schema.StructConverter;
 import com.github.dariobalinzo.utils.ElasticConnection;
+import com.github.dariobalinzo.utils.Utils;
 import junit.framework.TestCase;
 import org.apache.http.util.EntityUtils;
 import org.apache.kafka.connect.data.Schema;
@@ -45,13 +46,27 @@ public class TestSchema extends TestCase {
 
     }
 
+    public void testGetIndexAlias() throws Exception {
+        Response respAlias;
+        try {
+            respAlias = es.getClient()
+                    .getLowLevelClient()
+                    .performRequest("GET", "_aliases");
+        } catch (IOException e) {
+            System.out.println("error in searching alias names");
+            throw new RuntimeException(e);
+        }
+        Utils.getIndexAliasList(respAlias,"");
+    }
+
 
     public void testSearch() throws Exception {
         SearchRequest searchRequest = new SearchRequest();
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(QueryBuilders.matchAllQuery());
         searchRequest.source(searchSourceBuilder);
-        searchRequest.indices("metricbeat-6.2.4-2018.05.20");
+        searchRequest.indices("inspection_alias");
+        searchRequest.types("log", "inspections1");
         SearchResponse searchResponse = es.getClient().search(searchRequest);
         SearchHits hits = searchResponse.getHits();
         SearchHit[] searchHits = hits.getHits();

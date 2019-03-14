@@ -85,6 +85,21 @@ curl localhost:8083/connectors/elastic-source/status | jq
   * Type: string
   * Default: ""
   * Importance: medium
+ 
+ ``is.index.alias.prefix``
+   Is search alias index 
+ 
+   * Type: string
+   * Default: "false"
+   * Importance: medium
+   
+ ``index.mapping.type``
+    Mapping type index
+    
+    * Type: string
+    * Default: ""
+    * Importance: medium 
+    
 
 
 ### Connector Configuration

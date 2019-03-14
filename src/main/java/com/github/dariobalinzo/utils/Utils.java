@@ -16,6 +16,7 @@
 
 package com.github.dariobalinzo.utils;
 
+import org.json.JSONObject;
 import org.elasticsearch.client.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 public class Utils {
@@ -56,6 +59,41 @@ public class Utils {
                     result.add(index);
                 }
             }
+        } catch (IOException e) {
+            logger.error("error while getting indices",e);
+        }
+
+        return result;
+    }
+
+    public static List<String> getIndexAliasList(Response aliasReply, String prefix) {
+        List<String> result = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader( new InputStreamReader( aliasReply.getEntity().getContent()))) {
+            StringBuilder respContent = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                respContent.append(line);
+            }
+
+            JSONObject respObj = new JSONObject(respContent.toString());
+            Iterator<String> keys = respObj.keys();
+
+            while(keys.hasNext()) {
+                String key = keys.next();
+                if (respObj.get(key) instanceof JSONObject) {
+                    JSONObject nestObj = respObj.getJSONObject(key);
+                    if (nestObj.get("aliases") instanceof JSONObject) {
+                        if (nestObj.getJSONObject("aliases").keys().hasNext()) {
+                            String indexAlias = nestObj.getJSONObject("aliases").keys().next();
+                            if (indexAlias.startsWith(prefix)) {
+                                result.add(indexAlias);
+                            }
+                        }
+                    }
+
+                }
+            }
+
         } catch (IOException e) {
             logger.error("error while getting indices",e);
         }

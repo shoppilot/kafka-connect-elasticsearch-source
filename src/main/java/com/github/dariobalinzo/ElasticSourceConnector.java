@@ -104,24 +104,47 @@ public class ElasticSourceConnector extends SourceConnector {
         return ElasticSourceTask.class;
     }
 
+    private List<String> getCurrentIndides() {
+        List<String> currentIndexes;
+
+        if (config.getString(ElasticSourceConnectorConfig.IS_INDEX_ALIAS_PREFIX_CONFIG).toLowerCase().equals("true")) {
+            Response resp;
+            try {
+                resp = elasticConnection.getClient()
+                        .getLowLevelClient()
+                        .performRequest("GET", "_aliases");
+            } catch (IOException e) {
+                logger.error("error in searching alias names");
+                throw new RuntimeException(e);
+            }
+
+            currentIndexes = Utils.getIndexAliasList(resp,
+                    config.getString(ElasticSourceConnectorConfig.INDEX_PREFIX_CONFIG)
+            );
+
+        } else {
+            Response resp;
+            try {
+                resp = elasticConnection.getClient()
+                        .getLowLevelClient()
+                        .performRequest("GET", "_cat/indices");
+            } catch (IOException e) {
+                logger.error("error in searching index names");
+                throw new RuntimeException(e);
+            }
+            currentIndexes = Utils.getIndexList(resp,
+                    config.getString(ElasticSourceConnectorConfig.INDEX_PREFIX_CONFIG)
+            );
+        }
+
+        return currentIndexes;
+    }
 
     @Override
     public List<Map<String, String>> taskConfigs(int maxTasks) {
 
-        Response resp;
-        try {
-            resp = elasticConnection.getClient()
-                    .getLowLevelClient()
-                    .performRequest("GET", "_cat/indices");
-        } catch (IOException e) {
-            logger.error("error in searching index names");
-            throw new RuntimeException(e);
-        }
+        List<String> currentIndexes = getCurrentIndides();
 
-
-        List<String> currentIndexes = Utils.getIndexList(resp,
-                config.getString(ElasticSourceConnectorConfig.INDEX_PREFIX_CONFIG)
-        );
         int numGroups = Math.min(currentIndexes.size(), maxTasks);
         List<List<String>> tablesGrouped = Utils.groupPartitions(currentIndexes, numGroups);
         List<Map<String, String>> taskConfigs = new ArrayList<>(tablesGrouped.size());

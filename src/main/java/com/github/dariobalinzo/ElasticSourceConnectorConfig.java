@@ -87,6 +87,16 @@ public class ElasticSourceConnectorConfig extends AbstractConfig {
     private static final String INDEX_PREFIX_DEFAULT = "";
     private static final String INDEX_PREFIX_DISPLAY = "Indices prefix Whitelist";
 
+    public static final String IS_INDEX_ALIAS_PREFIX_CONFIG = "is.index.alias.prefix";
+    private static final String IS_INDEX_ALIAS_PREFIX_DOC = "Is query indices aliases to include in copying.";
+    private static final String IS_INDEX_ALIAS_PREFIX_DEFAULT = "";
+    private static final String IS_INDEX_ALIAS_PREFIX_DISPLAY = "Is prefix of indices aliases Whitelist";
+
+    public static final String  MAPPING_TYPE_PREFIX_CONFIG = "index.mapping.type";
+    private static final String MAPPING_TYPE_PREFIX_DOC = "List of mapping type to include in copying.";
+    private static final String MAPPING_TYPE_PREFIX_DEFAULT = "";
+    private static final String MAPPING_TYPE_PREFIX_DISPLAY = "Mapping type prefix Whitelist";
+
 
     public static final String TOPIC_PREFIX_CONFIG = "topic.prefix";
     private static final String TOPIC_PREFIX_DOC =
@@ -187,6 +197,26 @@ public class ElasticSourceConnectorConfig extends AbstractConfig {
                 ++orderInGroup,
                 Width.LONG,
                 INDEX_PREFIX_DISPLAY
+        ).define(
+                IS_INDEX_ALIAS_PREFIX_CONFIG,
+                Type.STRING,
+                IS_INDEX_ALIAS_PREFIX_DEFAULT,
+                Importance.MEDIUM,
+                IS_INDEX_ALIAS_PREFIX_DOC,
+                DATABASE_GROUP,
+                ++orderInGroup,
+                Width.LONG,
+                IS_INDEX_ALIAS_PREFIX_DISPLAY
+        ).define(
+                MAPPING_TYPE_PREFIX_CONFIG,
+                Type.STRING,
+                MAPPING_TYPE_PREFIX_DEFAULT,
+                Importance.MEDIUM,
+                MAPPING_TYPE_PREFIX_DOC,
+                DATABASE_GROUP,
+                ++orderInGroup,
+                Width.LONG,
+                MAPPING_TYPE_PREFIX_DISPLAY
         );
     }
 
