@@ -56,6 +56,7 @@ public class ElasticSourceTask extends SourceTask {
 
     private AtomicBoolean stopping = new AtomicBoolean(false);
     private List<String> indices;
+    private List<String> mappingTypes;
     private long connectionRetryBackoff;
     private int maxConnectionAttempts;
     private String topic;
@@ -94,6 +95,7 @@ public class ElasticSourceTask extends SourceTask {
         incrementingField = config.getString(ElasticSourceConnectorConfig.INCREMENTING_FIELD_NAME_CONFIG);
         size = Integer.parseInt(config.getString(ElasticSourceConnectorConfig.BATCH_MAX_ROWS_CONFIG));
         pollingMs = Integer.parseInt(config.getString(ElasticSourceConnectorConfig.POLL_INTERVAL_MS_CONFIG));
+        mappingTypes = Arrays.asList(config.getString(ElasticSourceTaskConfig.MAPPING_TYPE_PREFIX_CONFIG).split(","));
     }
 
     private void initEsConnection() {
@@ -110,6 +112,7 @@ public class ElasticSourceTask extends SourceTask {
         connectionRetryBackoff = Long.parseLong(config.getString(
                 ElasticSourceConnectorConfig.CONNECTION_BACKOFF_CONFIG
         ));
+
         if (esUser == null || esUser.isEmpty()) {
             es = new ElasticConnection(
                     esHost,
@@ -179,6 +182,11 @@ public class ElasticSourceTask extends SourceTask {
             ).sort(incrementingField, SortOrder.ASC);
             searchSourceBuilder.size(1); // only one record
             searchRequest.source(searchSourceBuilder);
+
+            if (mappingTypes.size() > 0) {
+                searchRequest.types(mappingTypes.toArray(new String[mappingTypes.size()]));
+            }
+
             SearchResponse searchResponse = null;
             try {
                 for (int i = 0; i < maxConnectionAttempts; ++i) {
@@ -235,6 +243,10 @@ public class ElasticSourceTask extends SourceTask {
         ).sort(incrementingField, SortOrder.ASC); //TODO configure custom query
         searchSourceBuilder.size(1000);
         searchRequest.source(searchSourceBuilder);
+
+        if (mappingTypes.size() > 0) {
+            searchRequest.types(mappingTypes.toArray(new String[mappingTypes.size()]));
+        }
         SearchResponse searchResponse = null;
         String scrollId = null;
         try {

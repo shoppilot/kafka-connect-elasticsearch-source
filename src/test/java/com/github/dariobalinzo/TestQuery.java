@@ -53,7 +53,7 @@ public class TestQuery extends TestCase {
 
     public void testTask() throws Exception {
 
-        task.setupTest(Arrays.asList("metricbeat-6.2.4-2018.05.20", "metricbeat-6.2.4-2018.05.21", "metricbeat-6.2.4-2018.05.22"));
+        task.setupTest(Arrays.asList("inspection_alias", "inspection_2018_02_01"));
         //while (true) {
         //    task.poll();
         //}

@@ -50,6 +50,8 @@ public class SchemaConverter {
                         schemaBuilder.field(Utils.filterAvroName(k), Schema.OPTIONAL_FLOAT32_SCHEMA);
                     } else if (v instanceof Double) {
                         schemaBuilder.field(Utils.filterAvroName(k), Schema.OPTIONAL_FLOAT64_SCHEMA);
+                    } else if (v instanceof  Boolean) {
+                        schemaBuilder.field(Utils.filterAvroName(k), Schema.OPTIONAL_BOOLEAN_SCHEMA);
                     } else if (v instanceof List) {
 
                         if (!((List) v).isEmpty()) {
@@ -67,6 +69,11 @@ public class SchemaConverter {
                                 ).build();
                             } else if ( item instanceof Long) {
                                 schemaBuilder.field(Utils.filterAvroName(k), SchemaBuilder.array(SchemaBuilder.OPTIONAL_INT64_SCHEMA)
+                                        .optional()
+                                        .build()
+                                ).build();
+                            } else if ( item instanceof Boolean) {
+                                schemaBuilder.field(Utils.filterAvroName(k), SchemaBuilder.array(SchemaBuilder.OPTIONAL_BOOLEAN_SCHEMA)
                                         .optional()
                                         .build()
                                 ).build();
