@@ -112,7 +112,7 @@ public class ElasticSourceConnector extends SourceConnector {
             try {
                 resp = elasticConnection.getClient()
                         .getLowLevelClient()
-                        .performRequest("GET", "_aliases");
+                        .performRequest("GET", "/_aliases");
             } catch (IOException e) {
                 logger.error("error in searching alias names");
                 throw new RuntimeException(e);
@@ -127,7 +127,7 @@ public class ElasticSourceConnector extends SourceConnector {
             try {
                 resp = elasticConnection.getClient()
                         .getLowLevelClient()
-                        .performRequest("GET", "_cat/indices");
+                        .performRequest("GET", "/_cat/indices");
             } catch (IOException e) {
                 logger.error("error in searching index names");
                 throw new RuntimeException(e);
