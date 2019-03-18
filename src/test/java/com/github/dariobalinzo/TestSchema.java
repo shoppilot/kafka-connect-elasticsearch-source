@@ -22,7 +22,6 @@ import com.github.dariobalinzo.schema.StructConverter;
 import com.github.dariobalinzo.utils.ElasticConnection;
 import com.github.dariobalinzo.utils.Utils;
 import junit.framework.TestCase;
-import org.apache.http.util.EntityUtils;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.Struct;
 import org.elasticsearch.action.search.SearchRequest;
@@ -47,18 +46,18 @@ public class TestSchema extends TestCase {
     }
 
     public void testGetIndexAlias() throws Exception {
+
         Response respAlias;
         try {
             respAlias = es.getClient()
                     .getLowLevelClient()
-                    .performRequest("GET", "_aliases");
+                    .performRequest("GET", "/_aliases");
         } catch (IOException e) {
             System.out.println("error in searching alias names");
             throw new RuntimeException(e);
         }
         Utils.getIndexAliasList(respAlias,"");
     }
-
 
     public void testSearch() throws Exception {
         SearchRequest searchRequest = new SearchRequest();
