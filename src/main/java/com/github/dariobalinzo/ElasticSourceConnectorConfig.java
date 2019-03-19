@@ -97,6 +97,11 @@ public class ElasticSourceConnectorConfig extends AbstractConfig {
     private static final String MAPPING_TYPE_PREFIX_DEFAULT = "";
     private static final String MAPPING_TYPE_PREFIX_DISPLAY = "Mapping type prefix Whitelist";
 
+    public static final String  WHITELIST_FIELDS_CONFIG = "whitelist.fields";
+    private static final String WHITELIST_FIELDS_DOC = "List of whitelist fields accept.";
+    private static final String WHITELIST_FIELDS_DEFAULT = "";
+    private static final String WHITELIST_FIELDS_DISPLAY = "Mapping fields Whitelist";
+
 
     public static final String TOPIC_PREFIX_CONFIG = "topic.prefix";
     private static final String TOPIC_PREFIX_DOC =
@@ -217,6 +222,16 @@ public class ElasticSourceConnectorConfig extends AbstractConfig {
                 ++orderInGroup,
                 Width.LONG,
                 MAPPING_TYPE_PREFIX_DISPLAY
+        ).define(
+                WHITELIST_FIELDS_CONFIG,
+                Type.STRING,
+                WHITELIST_FIELDS_DEFAULT,
+                Importance.MEDIUM,
+                WHITELIST_FIELDS_DOC,
+                DATABASE_GROUP,
+                ++orderInGroup,
+                Width.LONG,
+                WHITELIST_FIELDS_DISPLAY
         );
     }
 

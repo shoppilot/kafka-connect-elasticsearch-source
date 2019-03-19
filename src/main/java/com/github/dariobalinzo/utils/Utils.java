@@ -24,10 +24,8 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Utils {
 
@@ -109,5 +107,9 @@ public class Utils {
 
     public static String filterAvroName(String prefix, String elasticName) {
         return elasticName == null ? prefix:prefix+elasticName.replaceAll("[^a-zA-Z0-9]", "");
+    }
+
+    public static List<String> getArrayList(String list) {
+        return Arrays.asList(list.split(",")).stream().filter(value -> !Objects.equals(value, "")).collect(Collectors.toList());
     }
 }

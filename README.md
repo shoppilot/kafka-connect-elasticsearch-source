@@ -100,7 +100,12 @@ curl localhost:8083/connectors/elastic-source/status | jq
     * Default: ""
     * Importance: medium 
     
-
+ ``whitelist.fields``
+    Allow extracts fields
+    
+    * Type: string
+    * Default: ""
+    * Importance: medium
 
 ### Connector Configuration
 

@@ -27,19 +27,22 @@ import java.util.stream.Collectors;
 
 public class StructConverter {
 
-    public static Struct convertElasticDocument2AvroStruct(Map<String, Object> doc, Schema schema) {
+    public static Struct convertElasticDocument2AvroStruct(Map<String, Object> doc, Schema schema, List<String> whitelistFields) {
 
         Struct struct = new Struct(schema);
-        convertDocumentStruct("",doc, struct,schema);
+        convertDocumentStruct("",doc, struct,schema, whitelistFields);
         return struct;
 
     }
 
 
-    private static void convertDocumentStruct(String prefixName, Map<String, Object> doc, Struct struct, Schema schema) {
+    private static void convertDocumentStruct(String prefixName, Map<String, Object> doc, Struct struct, Schema schema, List<String> whitelistFields) {
 
         doc.keySet().forEach(
                 k -> {
+                    if (whitelistFields.size() > 0 && !whitelistFields.contains(k)) {
+                        return;
+                    }
                     Object v = doc.get(k);
                     if (v instanceof String) {
                         struct.put(Utils.filterAvroName(k), v);
@@ -67,7 +70,8 @@ public class StructConverter {
                                             Struct nestedStruct = new Struct(schema.field(Utils.filterAvroName(prefixName,k)).schema().valueSchema());
                                             convertDocumentStruct(
                                                     Utils.filterAvroName(prefixName,k)+".",
-                                                    (Map<String, Object>) i, nestedStruct, schema.field(Utils.filterAvroName(k)).schema().valueSchema());
+                                                    (Map<String, Object>) i, nestedStruct, schema.field(Utils.filterAvroName(k)).schema().valueSchema(),
+                                                    whitelistFields);
                                             return nestedStruct;
                                         }).collect(Collectors.toCollection(ArrayList::new));
                                 struct.put(Utils.filterAvroName(k),array );
@@ -84,7 +88,8 @@ public class StructConverter {
                                 Utils.filterAvroName(prefixName,k)+".",
                                 (Map<String, Object>) v,
                                 nestedStruct,
-                                schema.field(Utils.filterAvroName(k)).schema()
+                                schema.field(Utils.filterAvroName(k)).schema(),
+                                whitelistFields
                         );
                         struct.put(Utils.filterAvroName(k),nestedStruct);
 

@@ -25,20 +25,23 @@ import java.util.Map;
 
 public class SchemaConverter {
 
-    public static Schema convertElasticMapping2AvroSchema(Map<String, Object> doc, String name) {
+    public static Schema convertElasticMapping2AvroSchema(Map<String, Object> doc, String name, List<String> whitelistFields) {
 
         SchemaBuilder schemaBuilder = SchemaBuilder.struct().name(
                 Utils.filterAvroName("", name)); //characters not valid for avro schema name
-        convertDocumentSchema("", doc, schemaBuilder);
+        convertDocumentSchema("", doc, schemaBuilder, whitelistFields);
         return schemaBuilder.build();
 
     }
 
 
-    private static void convertDocumentSchema(String prefixName, Map<String, Object> doc, SchemaBuilder schemaBuilder) {
+    private static void convertDocumentSchema(String prefixName, Map<String, Object> doc, SchemaBuilder schemaBuilder, List<String> whitelistFields) {
 
         doc.keySet().forEach(
                 k -> {
+                    if (whitelistFields.size() > 0 && !whitelistFields.contains(k)) {
+                        return;
+                    }
                     Object v = doc.get(k);
                     if (v instanceof String) {
                         schemaBuilder.field(Utils.filterAvroName(k), Schema.OPTIONAL_STRING_SCHEMA);
@@ -94,7 +97,8 @@ public class SchemaConverter {
                                         .optional();
                                         convertDocumentSchema(Utils.filterAvroName(prefixName, k) + ".",
                                         (Map<String, Object>) item,
-                                        nestedSchema);
+                                        nestedSchema,
+                                        whitelistFields);
                                 schemaBuilder.field(Utils.filterAvroName(k), SchemaBuilder.array(nestedSchema.build()));
                             } else {
                                 throw new RuntimeException("error in converting list: type not supported");
@@ -107,7 +111,8 @@ public class SchemaConverter {
                         SchemaBuilder nestedSchema = SchemaBuilder.struct().name(Utils.filterAvroName(prefixName, k)).optional();
                         convertDocumentSchema(Utils.filterAvroName(prefixName, k) + ".",
                                 (Map<String, Object>) v,
-                                        nestedSchema
+                                        nestedSchema,
+                                whitelistFields
                                 );
                         schemaBuilder.field(Utils.filterAvroName(k), nestedSchema.build());
 
