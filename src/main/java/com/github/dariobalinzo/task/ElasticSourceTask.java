@@ -20,6 +20,7 @@ import com.github.dariobalinzo.ElasticSourceConnectorConfig;
 import com.github.dariobalinzo.schema.SchemaConverter;
 import com.github.dariobalinzo.schema.StructConverter;
 import com.github.dariobalinzo.utils.ElasticConnection;
+import com.github.dariobalinzo.utils.Utils;
 import com.github.dariobalinzo.utils.Version;
 import org.apache.kafka.common.config.ConfigException;
 import org.apache.kafka.common.config.types.Password;
@@ -57,6 +58,7 @@ public class ElasticSourceTask extends SourceTask {
     private AtomicBoolean stopping = new AtomicBoolean(false);
     private List<String> indices;
     private List<String> mappingTypes;
+    private List<String> whitelistFields;
     private long connectionRetryBackoff;
     private int maxConnectionAttempts;
     private String topic;
@@ -96,6 +98,7 @@ public class ElasticSourceTask extends SourceTask {
         size = Integer.parseInt(config.getString(ElasticSourceConnectorConfig.BATCH_MAX_ROWS_CONFIG));
         pollingMs = Integer.parseInt(config.getString(ElasticSourceConnectorConfig.POLL_INTERVAL_MS_CONFIG));
         mappingTypes = Arrays.asList(config.getString(ElasticSourceTaskConfig.MAPPING_TYPE_PREFIX_CONFIG).split(","));
+        whitelistFields = Utils.getArrayList(config.getString(ElasticSourceTaskConfig.WHITELIST_FIELDS_CONFIG));
     }
 
     private void initEsConnection() {
@@ -309,8 +312,8 @@ public class ElasticSourceTask extends SourceTask {
             Map<String, Object> sourceAsMap = hit.getSourceAsMap();
             Map sourcePartition = Collections.singletonMap(INDEX, index);
             Map sourceOffset = Collections.singletonMap(POSITION, sourceAsMap.get(incrementingField).toString());
-            Schema schema = SchemaConverter.convertElasticMapping2AvroSchema(sourceAsMap, index);
-            Struct struct = StructConverter.convertElasticDocument2AvroStruct(sourceAsMap, schema);
+            Schema schema = SchemaConverter.convertElasticMapping2AvroSchema(sourceAsMap, index, whitelistFields);
+            Struct struct = StructConverter.convertElasticDocument2AvroStruct(sourceAsMap, schema, whitelistFields);
 
             //document key
             String key = String.join("_", hit.getIndex(), hit.getType(), hit.getId());

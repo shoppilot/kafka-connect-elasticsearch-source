@@ -19,6 +19,7 @@ package com.github.dariobalinzo;
 
 import com.github.dariobalinzo.schema.SchemaConverter;
 import com.github.dariobalinzo.schema.StructConverter;
+import com.github.dariobalinzo.task.ElasticSourceTaskConfig;
 import com.github.dariobalinzo.utils.ElasticConnection;
 import com.github.dariobalinzo.utils.Utils;
 import junit.framework.TestCase;
@@ -33,6 +34,7 @@ import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 public class TestSchema extends TestCase {
@@ -41,12 +43,9 @@ public class TestSchema extends TestCase {
 
     public void setUp() throws Exception {
         es = new ElasticConnection("localhost", 9200, 10, 100);
-
-
     }
 
     public void testGetIndexAlias() throws Exception {
-
         Response respAlias;
         try {
             respAlias = es.getClient()
@@ -60,6 +59,7 @@ public class TestSchema extends TestCase {
     }
 
     public void testSearch() throws Exception {
+        List<String> whiteListFields = Utils.getArrayList("");
         SearchRequest searchRequest = new SearchRequest();
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(QueryBuilders.matchAllQuery());
@@ -73,12 +73,33 @@ public class TestSchema extends TestCase {
             // do something with the SearchHit
             Map<String, Object> sourceAsMap = hit.getSourceAsMap();
             System.out.println(sourceAsMap);
-            Schema schema = SchemaConverter.convertElasticMapping2AvroSchema(sourceAsMap, "test");
+            Schema schema = SchemaConverter.convertElasticMapping2AvroSchema(sourceAsMap, "test", whiteListFields);
             schema.toString();
-            Struct struct = StructConverter.convertElasticDocument2AvroStruct(sourceAsMap,schema);
+            Struct struct = StructConverter.convertElasticDocument2AvroStruct(sourceAsMap,schema, whiteListFields);
             struct.toString();
         }
+    }
 
+    public void testSearchWithWhitelistFields() throws Exception {
+        List<String> whiteListFields = Utils.getArrayList("date,inspection_id");
+        SearchRequest searchRequest = new SearchRequest();
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+        searchRequest.source(searchSourceBuilder);
+        searchRequest.indices("inspection_alias");
+        searchRequest.types("log", "inspections1");
+        SearchResponse searchResponse = es.getClient().search(searchRequest);
+        SearchHits hits = searchResponse.getHits();
+        SearchHit[] searchHits = hits.getHits();
+        for (SearchHit hit : searchHits) {
+            // do something with the SearchHit
+            Map<String, Object> sourceAsMap = hit.getSourceAsMap();
+            System.out.println(sourceAsMap);
+            Schema schema = SchemaConverter.convertElasticMapping2AvroSchema(sourceAsMap, "test", whiteListFields);
+            schema.toString();
+            Struct struct = StructConverter.convertElasticDocument2AvroStruct(sourceAsMap,schema, whiteListFields);
+            struct.toString();
+        }
     }
 
 
