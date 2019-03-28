@@ -60,6 +60,7 @@ public class TestSchema extends TestCase {
 
     public void testSearch() throws Exception {
         List<String> whiteListFields = Utils.getArrayList("");
+        List<String> castStringFields = Utils.getArrayList("");
         SearchRequest searchRequest = new SearchRequest();
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(QueryBuilders.matchAllQuery());
@@ -73,15 +74,16 @@ public class TestSchema extends TestCase {
             // do something with the SearchHit
             Map<String, Object> sourceAsMap = hit.getSourceAsMap();
             System.out.println(sourceAsMap);
-            Schema schema = SchemaConverter.convertElasticMapping2AvroSchema(sourceAsMap, "test", whiteListFields);
+            Schema schema = SchemaConverter.convertElasticMapping2AvroSchema(sourceAsMap, "test", whiteListFields, castStringFields);
             schema.toString();
-            Struct struct = StructConverter.convertElasticDocument2AvroStruct(sourceAsMap,schema, whiteListFields);
+            Struct struct = StructConverter.convertElasticDocument2AvroStruct(sourceAsMap,schema, whiteListFields, castStringFields);
             struct.toString();
         }
     }
 
     public void testSearchWithWhitelistFields() throws Exception {
         List<String> whiteListFields = Utils.getArrayList("date,inspection_id");
+        List<String> castStringFields = Utils.getArrayList("");
         SearchRequest searchRequest = new SearchRequest();
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(QueryBuilders.matchAllQuery());
@@ -95,9 +97,32 @@ public class TestSchema extends TestCase {
             // do something with the SearchHit
             Map<String, Object> sourceAsMap = hit.getSourceAsMap();
             System.out.println(sourceAsMap);
-            Schema schema = SchemaConverter.convertElasticMapping2AvroSchema(sourceAsMap, "test", whiteListFields);
+            Schema schema = SchemaConverter.convertElasticMapping2AvroSchema(sourceAsMap, "test", whiteListFields, castStringFields);
             schema.toString();
-            Struct struct = StructConverter.convertElasticDocument2AvroStruct(sourceAsMap,schema, whiteListFields);
+            Struct struct = StructConverter.convertElasticDocument2AvroStruct(sourceAsMap,schema, whiteListFields, castStringFields);
+            struct.toString();
+        }
+    }
+
+    public void testSearchWithcastStringFields() throws Exception {
+        List<String> whiteListFields = Utils.getArrayList("");
+        List<String> castStringFields = Utils.getArrayList("timesummary");
+        SearchRequest searchRequest = new SearchRequest();
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+        searchRequest.source(searchSourceBuilder);
+        searchRequest.indices("inspection_alias");
+        searchRequest.types("inspection", "inspections1");
+        SearchResponse searchResponse = es.getClient().search(searchRequest);
+        SearchHits hits = searchResponse.getHits();
+        SearchHit[] searchHits = hits.getHits();
+        for (SearchHit hit : searchHits) {
+            // do something with the SearchHit
+            Map<String, Object> sourceAsMap = hit.getSourceAsMap();
+            System.out.println(sourceAsMap);
+            Schema schema = SchemaConverter.convertElasticMapping2AvroSchema(sourceAsMap, "test", whiteListFields, castStringFields);
+            schema.toString();
+            Struct struct = StructConverter.convertElasticDocument2AvroStruct(sourceAsMap,schema, whiteListFields, castStringFields);
             struct.toString();
         }
     }

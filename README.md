@@ -106,6 +106,13 @@ curl localhost:8083/connectors/elastic-source/status | jq
     * Type: string
     * Default: ""
     * Importance: medium
+   
+``cast.string.fields``
+   Allow cast array, map, struct fields to string
+   
+   * Type: string
+   * Default: ""
+   * Importance: medium
 
 ### Connector Configuration
 
