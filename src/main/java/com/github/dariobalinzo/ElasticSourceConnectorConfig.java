@@ -102,6 +102,11 @@ public class ElasticSourceConnectorConfig extends AbstractConfig {
     private static final String WHITELIST_FIELDS_DEFAULT = "";
     private static final String WHITELIST_FIELDS_DISPLAY = "Mapping fields Whitelist";
 
+    public static final String  CAST_STRING_FIELDS_CONFIG = "cast.string.fields";
+    private static final String CAST_STRING_FIELDS_DOC = "List of array, struct, map fields cast to string";
+    private static final String CAST_STRING_FIELDS_DEFAULT = "";
+    private static final String CAST_STRING_FIELDS_DISPLAY = "List fields cast to string";
+
 
     public static final String TOPIC_PREFIX_CONFIG = "topic.prefix";
     private static final String TOPIC_PREFIX_DOC =
@@ -232,6 +237,16 @@ public class ElasticSourceConnectorConfig extends AbstractConfig {
                 ++orderInGroup,
                 Width.LONG,
                 WHITELIST_FIELDS_DISPLAY
+        ).define(
+                CAST_STRING_FIELDS_CONFIG,
+                Type.STRING,
+                CAST_STRING_FIELDS_DEFAULT,
+                Importance.MEDIUM,
+                CAST_STRING_FIELDS_DOC,
+                DATABASE_GROUP,
+                ++orderInGroup,
+                Width.LONG,
+                CAST_STRING_FIELDS_DISPLAY
         );
     }
 

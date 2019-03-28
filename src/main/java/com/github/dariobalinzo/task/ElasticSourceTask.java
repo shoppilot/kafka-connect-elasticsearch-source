@@ -59,6 +59,7 @@ public class ElasticSourceTask extends SourceTask {
     private List<String> indices;
     private List<String> mappingTypes;
     private List<String> whitelistFields;
+    private List<String> castStringFields;
     private long connectionRetryBackoff;
     private int maxConnectionAttempts;
     private String topic;
@@ -99,6 +100,7 @@ public class ElasticSourceTask extends SourceTask {
         pollingMs = Integer.parseInt(config.getString(ElasticSourceConnectorConfig.POLL_INTERVAL_MS_CONFIG));
         mappingTypes = Arrays.asList(config.getString(ElasticSourceTaskConfig.MAPPING_TYPE_PREFIX_CONFIG).split(","));
         whitelistFields = Utils.getArrayList(config.getString(ElasticSourceTaskConfig.WHITELIST_FIELDS_CONFIG));
+        castStringFields = Utils.getArrayList(config.getString(ElasticSourceTaskConfig.CAST_STRING_FIELDS_CONFIG));
     }
 
     private void initEsConnection() {
@@ -312,8 +314,8 @@ public class ElasticSourceTask extends SourceTask {
             Map<String, Object> sourceAsMap = hit.getSourceAsMap();
             Map sourcePartition = Collections.singletonMap(INDEX, index);
             Map sourceOffset = Collections.singletonMap(POSITION, sourceAsMap.get(incrementingField).toString());
-            Schema schema = SchemaConverter.convertElasticMapping2AvroSchema(sourceAsMap, index, whitelistFields);
-            Struct struct = StructConverter.convertElasticDocument2AvroStruct(sourceAsMap, schema, whitelistFields);
+            Schema schema = SchemaConverter.convertElasticMapping2AvroSchema(sourceAsMap, index, whitelistFields, castStringFields);
+            Struct struct = StructConverter.convertElasticDocument2AvroStruct(sourceAsMap, schema, whitelistFields, castStringFields);
 
             //document key
             String key = String.join("_", hit.getIndex(), hit.getType(), hit.getId());
