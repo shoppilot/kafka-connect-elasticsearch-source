@@ -48,10 +48,14 @@ public class StructConverter {
                         return;
                     }
                     Object v = doc.get(k);
-                    if ( castStringFields.size() > 0 && castStringFields.contains(k) ) {
+                    if (v == null){
+                        return;
+                    } else if ( castStringFields.size() > 0 && castStringFields.contains(k) ) {
                         String jsonValue = JSONValue.toJSONString(v);
                         struct.put(Utils.filterAvroName(k), jsonValue);
                     } else if (v instanceof String  ) {
+                        struct.put(Utils.filterAvroName(k), v);
+                    } else if (v instanceof Boolean  ) {
                         struct.put(Utils.filterAvroName(k), v);
                     } else if (v instanceof Integer || v instanceof Long) {
                         struct.put(Utils.filterAvroName(k), v);
@@ -63,7 +67,11 @@ public class StructConverter {
                             //assuming that every item of the list has the same schema
                             Object item = ((List) v).get(0);
                             struct.put(Utils.filterAvroName(k),new ArrayList<>());
-                            if (item instanceof String) {
+                            if (item == null) {
+                                return;
+                            } else if (item instanceof String) {
+                                struct.getArray(Utils.filterAvroName(k)).addAll((List) v);
+                            } else if (item instanceof Boolean) {
                                 struct.getArray(Utils.filterAvroName(k)).addAll((List) v);
                             } else if (item instanceof Integer || item instanceof Long) {
                                 struct.getArray(Utils.filterAvroName(k)).addAll((List) v);
@@ -103,7 +111,9 @@ public class StructConverter {
                         struct.put(Utils.filterAvroName(k),nestedStruct);
 
                     } else {
-                        throw new RuntimeException("type not supported " + k);
+                        String message = String.format("key: [%s]; v: [%s], v_type: [%s] doc: [%s]",
+                            k, v, v.getClass().getName(), doc);
+                        throw new RuntimeException("type not supported" + message);
                     }
                 }
         );

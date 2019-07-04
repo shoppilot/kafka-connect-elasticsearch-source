@@ -45,7 +45,9 @@ public class SchemaConverter {
                         return;
                     }
                     Object v = doc.get(k);
-                    if (v instanceof String || ( castStringFields.size() > 0 && castStringFields.contains(k)) ) {
+                    if (v == null ) {
+                        return;
+                    } else if (v instanceof String || ( castStringFields.size() > 0 && castStringFields.contains(k)) ) {
                         schemaBuilder.field(Utils.filterAvroName(k), Schema.OPTIONAL_STRING_SCHEMA);
                     } else if (v instanceof Integer) {
                         schemaBuilder.field(Utils.filterAvroName(k), Schema.OPTIONAL_INT32_SCHEMA);
@@ -62,7 +64,9 @@ public class SchemaConverter {
                         if (!((List) v).isEmpty()) {
                             //assuming that every item of the list has the same schema
                             Object item = ((List) v).get(0);
-                            if (item instanceof String) {
+                            if (item == null ) {
+                                return;
+                            } else if (item instanceof String) {
                                 schemaBuilder.field(Utils.filterAvroName(k), SchemaBuilder.array(SchemaBuilder.OPTIONAL_STRING_SCHEMA)
                                         .optional()
                                         .build()
@@ -87,7 +91,7 @@ public class SchemaConverter {
                                         .optional()
                                         .build()
                                 ).build();
-                            } if (item instanceof Double ) {
+                            } else if (item instanceof Double ) {
                                 schemaBuilder.field(Utils.filterAvroName(k), SchemaBuilder.array(SchemaBuilder.OPTIONAL_FLOAT64_SCHEMA)
                                         .optional()
                                         .build()
@@ -104,9 +108,9 @@ public class SchemaConverter {
                                         castStringFields);
                                 schemaBuilder.field(Utils.filterAvroName(k), SchemaBuilder.array(nestedSchema.build()));
                             } else {
-                                throw new RuntimeException("error in converting list: type not supported");
+                                String message = String.format("key: [%s]; item: [%s]; item_type [%s]; doc: [%s]", k, item.getClass().getName(), item, doc);
+                                throw new RuntimeException("error in converting list; type not supported for item; " + message);
                             }
-
                         }
 
                     } else if (v instanceof Map) {
@@ -121,7 +125,9 @@ public class SchemaConverter {
                         schemaBuilder.field(Utils.filterAvroName(k), nestedSchema.build());
 
                     } else {
-                        throw new RuntimeException("type not supported " + k);
+                        String message = String.format("key: [%s]; v: [%s], v_type: [%s] doc: [%s]",
+                            k, v, v.getClass().getName(), doc);
+                        throw new RuntimeException("type not supported" + message);
                     }
                 }
         );
